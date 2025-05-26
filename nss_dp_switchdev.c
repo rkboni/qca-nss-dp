@@ -540,6 +540,20 @@ static struct notifier_block *nss_dp_sw_ev_nb = &nss_dp_switchdev_notifier_nb;
 
 #if defined(NSS_DP_PPE_SUPPORT)
 /*
+ * nss_dp_switchdev_fdb_add_event
+ *
+ * Used to log add events.
+ */
+
+static int nss_dp_switchdev_fdb_add_event(struct net_device *netdev,
+					  struct switchdev_notifier_fdb_info *fdb_info)
+{
+	struct nss_dp_dev *dp_priv = (struct nss_dp_dev *)netdev_priv(netdev);
+	netdev_dbg(netdev, "FDB ADD %pM port %d\n", fdb_info->addr, dp_priv->macid);
+	return NOTIFY_DONE;
+}
+
+/*
  * nss_dp_switchdev_fdb_del_event
  *
  * Used for EDMA v1 to remove old MAC in order to preventing having
@@ -597,6 +611,8 @@ static int nss_dp_switchdev_event_nb(struct notifier_block *unused,
 	switch (event) {
 	case SWITCHDEV_FDB_DEL_TO_DEVICE:
 		return nss_dp_switchdev_fdb_del_event(dev, ptr);
+	case SWITCHDEV_FDB_ADD_TO_DEVICE:
+		return nss_dp_switchdev_fdb_add_event(dev, ptr);
 	default:
 		netdev_dbg(dev, "Switchdev event %lu is not supported\n", event);
 	}
